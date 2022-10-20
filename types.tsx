@@ -17,7 +17,14 @@ export type RootStackParamList = {
   Root: NavigatorScreenParams<RootTabParamList> | undefined;
   Modal: undefined;
   NotFound: undefined;
+  Auth: undefined;
+  Register: undefined;
 };
+
+export type ProfileStackParamList = {
+  Profile: undefined;
+  Orders: undefined;
+}
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> = NativeStackScreenProps<
   RootStackParamList,
@@ -28,7 +35,7 @@ export type RootTabParamList = {
   Home: undefined;
   Shops: undefined;
   Cart: undefined;
-  Profile: undefined;
+  ProfileScreens: NavigatorScreenParams<ProfileStackParamList> | undefined;
   More: undefined;
 };
 
@@ -36,3 +43,4 @@ export type RootTabScreenProps<Screen extends keyof RootTabParamList> = Composit
   BottomTabScreenProps<RootTabParamList, Screen>,
   NativeStackScreenProps<RootStackParamList>
 >;
+

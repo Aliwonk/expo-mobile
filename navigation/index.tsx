@@ -5,9 +5,9 @@
  */
 import { FontAwesome } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme, NavigationContainerRef, useNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import * as React from 'react';
+import React, { useRef } from 'react';
 import { ColorSchemeName, Pressable, Text } from 'react-native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 
@@ -15,7 +15,7 @@ import Colors from '../constants/Colors';
 import useColorScheme from '../hooks/useColorScheme';
 import ModalScreen from '../screens/ModalScreen';
 import NotFoundScreen from '../screens/NotFoundScreen';
-import { RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
+import { ProfileStackParamList, RootStackParamList, RootTabParamList, RootTabScreenProps } from '../types';
 import LinkingConfiguration from './LinkingConfiguration';
 import CartScreen from '../screens/CartScreen';
 import HomeScreen from '../screens/HomeScreen';
@@ -26,14 +26,21 @@ import LocationSVGIcon from '../assets/icons/Location.svg';
 import ProfileSVGIcon from '../assets/icons/User_male_circle.svg';
 import CoinsSVGIcon from '../assets/icons/Coins.svg';
 import MenuSVGIcon from '../assets/icons/Circle_menu.svg';
-import ProfileScreen from '../screens/ProfileScreen';
-import OrderScreen from '../screens/OrderScreen';
+import ProfileScreen from '../screens/profileScreens/ProfileScreen';
+import OrdersScreen from '../screens/profileScreens/OrdersScreen';
+import { useAuth } from '../hooks/useAuth';
+import AuthScreen from '../screens/AuthScreen';
+import RegisterScreen from '../screens/Register';
+import { useAppDispatch, useAppSelector } from '../hooks/reduxHooks';
+import { RootState } from '../reduxStore/store';
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
+  const navigationRef = useNavigationContainerRef<RootStackParamList>();
+
   return (
     <NavigationContainer
       linking={LinkingConfiguration}
-      theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    >
       <RootNavigator />
     </NavigationContainer>
   );
@@ -45,16 +52,42 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
  */
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-function RootNavigator() {
+// type PropsRootNavigator = {
+//   navigator: NavigationContainerRef<RootStackParamList> | null
+// }
+
+const RootNavigator: React.FC = () => {
+  // const userData = useAppSelector((state: RootState) => state.auth.user);
+  const userData = true;
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name='Root' component={BottomTabNavigator} options={{ headerShown: false }} />
-      <Stack.Screen name='NotFound' component={NotFoundScreen} options={{ title: 'Oops!' }} />
-      <Stack.Group screenOptions={{ presentation: 'modal' }}>
-        <Stack.Screen name='Modal' component={ModalScreen} />
-      </Stack.Group>
+      {userData ? (
+        <>
+          <Stack.Screen name='Root' component={BottomTabNavigator} options={{ headerShown: false }} />
+          <Stack.Screen name='NotFound' component={NotFoundScreen} options={{ title: 'Oops!' }} />
+        </>
+      ) : (
+        <>
+          <Stack.Group>
+            <Stack.Screen name='Auth' component={AuthScreen} />
+            <Stack.Screen name='Register' component={RegisterScreen} />
+          </Stack.Group>
+        </>
+      )}
     </Stack.Navigator>
   );
+}
+const ProfileStack = createNativeStackNavigator<ProfileStackParamList>();
+
+const ProfileNavigator: React.FC = () => {
+  return (
+    <ProfileStack.Navigator initialRouteName='Profile' >
+      <ProfileStack.Group screenOptions={{headerShown: false}}>
+        <ProfileStack.Screen name='Profile' component={ProfileScreen} />
+        <ProfileStack.Screen name='Orders' component={OrdersScreen} />
+      </ProfileStack.Group>
+    </ProfileStack.Navigator>
+  )
 }
 
 /**
@@ -114,8 +147,8 @@ function BottomTabNavigator() {
         }}
       />
       <BottomTab.Screen
-        name='Profile'
-        component={ProfileScreen}
+        name='ProfileScreens'
+        component={ProfileNavigator}
         options={{
           title: 'ПРОФИЛЬ',
           tabBarIcon: () => <ProfileSVGIcon width={iconSize.width} height={iconSize.height} />
@@ -123,7 +156,7 @@ function BottomTabNavigator() {
       />
       <BottomTab.Screen
         name='More'
-        component={OrderScreen}
+        component={OrdersScreen}
         options={{
           title: 'Еще',
           tabBarIcon: () => <MenuSVGIcon width={iconSize.width} height={iconSize.height} />
